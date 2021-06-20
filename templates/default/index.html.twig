@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Fioulmarket - Test</h1>
+
+    <div class="gallery cf">
+        {% for image in images %}
+        {# 
+        1-if the api and rss responses were designed in such a way that the feedback would be uniform.
+        we could pass the whole object instead of passing only the urlToImage.
+        so that we can use it for the alt for example.
+        alt = "imageObject.title"
+        2- in this case if we are not controling the apis, the solution us that we can build the suitable object before passing it to the view.
+         #}
+         
+            <div>
+                <img src="{{ image }}" title="image" alt="image"/>   
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
