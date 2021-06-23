@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service\Images\Types;
 
-use App\Service\Images\Types\ImageValidator;
-
 
 
 /**
@@ -13,20 +11,13 @@ use App\Service\Images\Types\ImageValidator;
  */
 class TypeRSS
 {
-    private $imageList = array();
-    private $imageValidator;
-
     /**
-     * @param  ImageValidator $imageValidator
      * 
      */
-    public function __construct(ImageValidator $imageValidator)
+    public function __construct()
     {
-        // initialize   
-        $this->imageList = [];
-        $this->imageValidator = $imageValidator;
-    }
 
+    }
 
     /**
      * @param  string  $url to fetch 
@@ -35,7 +26,7 @@ class TypeRSS
     public function fetch($url): array
     {
         //initialize 
-        $imagesToFilter = [];
+        $imageList = [];
 
         try {
             $doc = simplexml_load_file($url);
@@ -45,18 +36,16 @@ class TypeRSS
                 $doc = new \DomDocument();
                 $doc->loadHTML(html_entity_decode((string)$item));
                 $img = $doc->getElementsByTagName('img')->item(0);
-                array_push($imagesToFilter,  $img->getAttribute('src'));
+                $imageList[] =$img->getAttribute('src');
             }
-            // filter Images Array 
-            $this->imageList = array_filter($imagesToFilter, function ($item) {
-                return $this->imageValidator->validate($item);
-            }, ARRAY_FILTER_USE_BOTH);
+           
         } catch (\Exception $e) {
-            // we could show something according to response code 
-            echo ($e);
+             // we could show something according to response code. 500 internal server error , 
+            //400 error query, 300 redirection
+            trigger_error('Exception! '.$e->getMessage()); 
         }
 
 
-        return $this->imageList;
+        return $imageList;
     }
 }

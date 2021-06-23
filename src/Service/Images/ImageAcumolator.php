@@ -6,6 +6,8 @@ namespace App\Service\Images;
 
 use App\Service\Images\Types\TypeAPI;
 use App\Service\Images\Types\TypeRSS;
+use App\Service\Images\Types\ImageValidator;
+
 
 
 
@@ -16,18 +18,19 @@ class ImageAcumolator
 {
     private $typeAPI;
     private $typeRSS;
-    private $imageList;
+    private $imageValidator;
 
     /**
      * @param   TypeAPI $typeAPI
      * @param   TypeRSS $typeRSS
+     * @param ImageValidator $imageValidator
      */
-    public function __construct(TypeAPI $typeAPI, TypeRSS $typeRSS)
+    public function __construct(TypeAPI $typeAPI, TypeRSS $typeRSS, ImageValidator $imageValidator)
     {
         // initialize
         $this->typeAPI = $typeAPI;
         $this->typeRSS = $typeRSS;
-        $this->imageList = [];
+        $this->imageValidator=$imageValidator;
     }
 
     /**
@@ -35,19 +38,27 @@ class ImageAcumolator
      * @return  array  unique array of merged image arrays =
      */
     public function handler(array $urlList): array
-    {
+    {  // initialise empty array to contain returned images
+        $imageList=array();
 
         foreach ($urlList as $currentURL => $currentType) {
             if ($currentType == "api") {
-                $this->imageList = array_merge($this->imageList, $this->typeAPI->fetch($currentURL));
+                $imageList = [...$imageList, ...$this->typeAPI->fetch($currentURL)];
             } elseif ($currentType == "rss") {
-                $this->imageList = array_merge($this->imageList, $this->typeRSS->fetch($currentURL));
+                $imageList = [...$imageList, ...$this->typeRSS->fetch($currentURL)];
+            }else {
+                continue;
             }
         }
-
+      
         //take off duplicates 
-        $this->imageList = array_unique($this->imageList);
+        $imageList = array_unique($imageList);
 
-        return $this->imageList;
+         // filter Images Array 
+        $imageList = array_filter($imageList, function ($item) {
+            return $this->imageValidator->validate((string)$item);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        return $imageList;
     }
 }

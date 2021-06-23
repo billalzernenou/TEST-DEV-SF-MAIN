@@ -29,14 +29,10 @@ class ImageValidator
     {
 
         $image_extension = explode(".", $path);
-
         // does image contain one of the extensions 
         $extension = end($image_extension);
-
-        if (!in_array($extension, $this->allowed_extensions)) {
-            return false;
-        } else {
-            return true;
-        }
+        // we should ignore what comes after ? in the url 
+       
+       return in_array($extension, $this->allowed_extensions);
     }
 }

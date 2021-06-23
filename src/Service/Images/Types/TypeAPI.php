@@ -5,28 +5,22 @@ declare(strict_types=1);
 namespace App\Service\Images\Types;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use App\Service\Images\Types\ImageValidator;
 
 /**
  * Class for get images from api
  */
 class TypeAPI
 {
-    private $imageValidator;
-    private $imageList = array();
     private $client;
 
     /**
      * @param  HttpClientInterface $client
-     * @param  ImageValidator $imageValidator
      * 
      */
-    public function __construct(HttpClientInterface $client, ImageValidator $imageValidator)
+    public function __construct(HttpClientInterface $client)
     {
         // initialize
         $this->client = $client;
-        $this->imageList = [];
-        $this->imageValidator = $imageValidator;
     }
 
 
@@ -38,7 +32,7 @@ class TypeAPI
     {
         try {
             //initialize 
-            $imagesToFilter = [];
+            $imageList=[];
 
             // Query the API
             $response = $this->client->request('GET', $url);
@@ -47,18 +41,16 @@ class TypeAPI
 
             // extract urlToImage from articles
             foreach ($articles as $article) {
-                array_push($imagesToFilter, $article->urlToImage);
-            }
-            // filter Images Array 
-            $this->imageList = array_filter($imagesToFilter, function ($item) {
-                return $this->imageValidator->validate((string)$item);
-            }, ARRAY_FILTER_USE_BOTH);
+                $imageList[]=$article->urlToImage;
+        }
         } catch (\Exception $e) {
-            // we could show something according to response code 
-            echo ($e);
+            // we could show something according to response code. 500 internal server error , 
+            //400 error query, 300 redirection
+            trigger_error('Exception! '.$e->getMessage()); 
+            
         }
 
 
-        return $this->imageList;
+        return $imageList;
     }
 }
